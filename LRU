@@ -1,0 +1,76 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+#define MAX_FRAMES 10
+#define MAX_REFERENCE 100
+int lruPageFaults(int *referenceString, int length, int capacity) {
+    int pageFrames[MAX_FRAMES];
+    int lastUsed[MAX_FRAMES];
+    int frameCount = 0;
+    int pageFaults = 0;
+    memset(lastUsed, -1, sizeof(lastUsed));
+    for (int i = 0; i < length; i++) {
+        bool pageFound = false;
+        for (int j = 0; j < frameCount; j++) {
+            if (pageFrames[j] == referenceString[i]) {
+                pageFound = true;
+                lastUsed[j] = i;
+                break;
+            }
+        }
+        if (!pageFound) {
+            pageFaults++;
+            if (frameCount < capacity) {
+                pageFrames[frameCount] = referenceString[i];
+                lastUsed[frameCount] = i;
+                frameCount++;
+            } else {
+                int lruIndex = 0;
+                for (int j = 1; j < capacity; j++) {
+                    if (lastUsed[j] < lastUsed[lruIndex]) {
+                        lruIndex = j;
+                    }
+                }
+                pageFrames[lruIndex] = referenceString[i];
+                lastUsed[lruIndex] = i;
+            }
+        }
+    }
+    return pageFaults;
+}
+int main() {
+    int referenceString[MAX_REFERENCE];
+    int length, capacity;
+    printf("Enter the number of page frames: ");
+    scanf("%d", &capacity);
+    printf("Enter the length of reference string: ");
+    scanf("%d", &length);
+    printf("Enter the reference string elements:\n");
+    for (int i = 0; i < length; i++) {
+        printf("Element %d: ", i+1);
+        scanf("%d", &referenceString[i]);
+    }
+    int pageFaults = lruPageFaults(referenceString, length, capacity);
+    printf("\nReference String: ");
+    for (int i = 0; i < length; i++) {
+        printf("%d ", referenceString[i]);
+    }
+    printf("\nPage Frames: %d\n", capacity);
+    printf("LRU Page Faults: %d\n", pageFaults);
+    return 0;
+}
+
+Enter the number of page frames: 3
+Enter the length of reference string: 7
+Enter the reference string elements:
+Element 1: 1
+Element 2: 2
+Element 3: 3
+Element 4: 4
+Element 5: 1
+Element 6: 2
+Element 7: 3
+
+Reference String: 1 2 3 4 1 2 3
+Page Frames: 3
+LRU Page Faults: 7
