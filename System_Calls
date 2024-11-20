@@ -1,0 +1,50 @@
+// SYSTEM CALLS
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+int main() {
+    int file_descriptor;
+    char data_to_write[] = "Welcomee Niggass!";
+    char buffer[100];
+    ssize_t bytes_read;
+    file_descriptor = open("example.txt", O_WRONLY | O_CREAT, 0644);
+    if (file_descriptor == -1) {
+        perror("open");
+        exit(1);
+    }
+    ssize_t bytes_written = write(file_descriptor, data_to_write, 
+                                  sizeof(data_to_write) - 1);
+    if (bytes_written == -1) {
+        perror("write");
+        exit(1);
+    }
+    printf("Wrote %zd bytes to the file.\n", bytes_written);
+    if (close(file_descriptor) == -1) {
+        perror("close");
+        exit(1);
+    }
+    if (chmod("example.txt", 0600) == -1) {
+        perror("chmod");
+        exit(1);
+    }
+    printf("Changed file permissions to read/write for owner only.\n");
+    file_descriptor = open("example.txt", O_RDONLY);
+    if (file_descriptor == -1) {
+        perror("open");
+        exit(1);
+    }
+    bytes_read = read(file_descriptor, buffer, sizeof(buffer));
+    if (bytes_read == -1) {
+        perror("read");
+        exit(1);
+    }
+    buffer[bytes_read] = '\0';
+    printf("Read from file: %s\n", buffer);
+    if (close(file_descriptor) == -1) {
+        perror("close");
+        exit(1);
+    }
+    return 0;
+}
